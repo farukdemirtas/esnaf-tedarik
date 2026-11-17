@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ESNAF TEDARİK
 
-## Getting Started
+**Ortak Güç, Ortak Kazanç** — Esnaf odası bünyesinde çok satıcılı dijital toptan tedarik platformu.
 
-First, run the development server:
+Next.js 15 · TypeScript · PostgreSQL 16 · Prisma · Tailwind CSS · Zod · Argon2id
+
+## Belgeler
+
+- [docs/01-analiz-ve-mimari.md](docs/01-analiz-ve-mimari.md) — Analiz, mimari, roller, veritabanı, sipariş akışı
+- [docs/02-asama-2-temel-altyapi.md](docs/02-asama-2-temel-altyapi.md) — Aşama 2 raporu: tamamlananlar, testler, eksikler
+- [docs/03-asama-3-yonetim-paneli.md](docs/03-asama-3-yonetim-paneli.md) — Aşama 3 raporu: yönetici ve personel paneli
+- [docs/04-asama-4-tedarikci-paneli.md](docs/04-asama-4-tedarikci-paneli.md) — Aşama 4 raporu: tedarikçi paneli
+- [docs/DEVAM-NOTU.md](docs/DEVAM-NOTU.md) — **Kaldığımız yer, yeni bilgisayarda kurulum ve Aşama 5 planı**
+
+## Kurulum
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env          # DATABASE_URL ve DATA_ENCRYPTION_KEY doldurulur
+npm run db:deploy             # migration'ları uygular
+npm run db:seed               # izinler, roller, Oda, kategoriler, ilçeler, ilk yönetici
+npm run dev                   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`SEED_TEST_USERS=1 npm run db:seed` her rolden **TEST** etiketli hesap ekler (yalnızca geliştirme/test).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Komutlar
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Komut | Açıklama |
+|---|---|
+| `npm run dev` | Geliştirme sunucusu |
+| `npm run build` / `npm start` | Canlı derleme / çalıştırma |
+| `npm run typecheck` | TypeScript kontrolü |
+| `npm run lint` | ESLint |
+| `npm test` | Birim + servis (veritabanı) testleri — test veritabanı gerekir |
+| `npm run test:e2e` | Uçtan uca rol testleri — test veritabanıyla çalışan sunucu gerekir |
+| `npm run db:migrate` | Şema değişikliği için yeni migration |
 
-## Learn More
+## Klasör yapısı
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+prisma/            şema, migration'lar, seed
+src/app/           sayfalar ve API (yonetim, personel, tedarikci, magaza, api/auth, api/files)
+src/modules/       iş mantığı (auth, members, …) — her aşamada yeni modüller eklenir
+src/lib/           db, izinler, kimlik/kapsam, şifreleme, denetim kaydı, dosya depolama
+src/components/    ortak arayüz bileşenleri
+tests/             unit · integration · e2e
+docs/              aşama raporları
+```

@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ESNAF TEDARİK kurumsal renkleri (geçici; Oda logosu/renkleri gelince güncellenecek) */
+@theme {
+  --color-brand-50: #eef5fb;
+  --color-brand-100: #d5e6f4;
+  --color-brand-200: #abcde9;
+  --color-brand-500: #2367a3;
+  --color-brand-600: #1b5487;
+  --color-brand-700: #154269;
+  --color-brand-800: #0f324f;
+  --color-brand-900: #0a2236;
+  --color-accent-400: #f2b54a;
+  --color-accent-500: #e49b1c;
+  --color-accent-600: #c07f0e;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f9;
+  color: #16202b;
+}
+
+/* Form öğeleri: bakkal esnafı için büyük, net dokunma alanları */
+@utility input {
+  @apply block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-200;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-medium text-slate-700;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-base font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+}
+@utility btn-primary {
+  @apply btn bg-brand-600 text-white hover:bg-brand-700 focus-visible:ring-brand-500;
+}
+@utility btn-secondary {
+  @apply btn border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 focus-visible:ring-brand-500;
+}
+@utility card {
+  @apply rounded-xl border border-slate-200 bg-white shadow-sm;
 }
