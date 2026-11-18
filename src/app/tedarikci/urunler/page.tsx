@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionForm, SubmitButton } from "@/components/form";
@@ -69,7 +70,7 @@ export default async function MyOffersPage({
                 <Td className="w-14">
                   {o.product.images[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={`/api/files/${o.product.images[0].path}`} alt="" className="h-12 w-12 rounded object-cover" />
+                    <img src={withBase(`/api/files/${o.product.images[0].path}`)} alt="" className="h-12 w-12 rounded object-cover" />
                   ) : (
                     <div className="h-12 w-12 rounded bg-slate-100" />
                   )}

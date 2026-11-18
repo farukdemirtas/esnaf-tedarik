@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -277,7 +278,7 @@ export default async function SupplierOrderDetailPage({ params }: { params: Prom
                     {inv.amount && <div className="mt-1 tabular-nums">{fmtMoney(inv.amount)}</div>}
                     <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                       {inv.filePath ? (
-                        <a href={`/api/files/${inv.filePath}`} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand-600 hover:underline">
+                        <a href={withBase(`/api/files/${inv.filePath}`)} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand-600 hover:underline">
                           Belgeyi aç
                         </a>
                       ) : (

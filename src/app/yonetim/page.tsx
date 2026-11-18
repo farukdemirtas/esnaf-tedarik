@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Alert } from "@/components/brand";
-import { PageHeader, StatCard } from "@/components/panel/ui";
+import { LinkButton, PageHeader, StatCard } from "@/components/panel/ui";
 import { requireOdaPage } from "@/lib/auth/oda";
 import { dashboardStats } from "@/modules/admin/service";
 
 export const metadata: Metadata = { title: "Gösterge Paneli" };
 
 export default async function OdaDashboard({ searchParams }: { searchParams: Promise<{ sifre?: string }> }) {
-  const { auth, base } = await requireOdaPage();
+  const { auth, base, can } = await requireOdaPage();
   const s = await dashboardStats(auth);
   const sp = await searchParams;
   const n = (v: number | null) => v ?? 0;
@@ -28,7 +28,11 @@ export default async function OdaDashboard({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageHeader title="Gösterge Paneli" description="Tüm rakamlar canlı veritabanından gelir. Detaylı satış raporları sipariş modülüyle birlikte eklenecektir." />
+      <PageHeader
+        title="Gösterge Paneli"
+        description={`Tüm rakamlar canlı veritabanından gelir.${can("report.view") ? " Tarih aralığına göre ayrıntılı satış raporları Raporlar sayfasındadır." : ""}`}
+        actions={can("report.view") ? <LinkButton href={`${base}/raporlar`} variant="secondary">Raporlar</LinkButton> : undefined}
+      />
       {sp.sifre && (
         <div className="mb-6">
           <Alert tone="success">Şifreniz değiştirildi.</Alert>

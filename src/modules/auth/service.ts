@@ -201,3 +201,37 @@ export async function resetPasswordWithToken(
   await audit({ userId: record.userId, action: "auth.reset.used", entityType: "User", entityId: record.userId, ip });
   return { ok: true };
 }
+
+export const FORGOT_MAX_PER_IP = 5;
+
+/**
+ * Kendi kendine şifre sıfırlama (yalnızca e-posta yapılandırılmışsa).
+ * Kullanıcının var olup olmadığı dışarıya sızdırılmaz: sonuç her durumda aynı mesajla gösterilir.
+ * IP başına 15 dakikada en fazla 5 talep.
+ */
+export async function requestPasswordResetByEmail(identifier: unknown, ip: string | null): Promise<"SENT" | "RATE_LIMITED" | "DISABLED"> {
+  const { isEmailEnabled, sendMail } = await import("@/lib/mailer");
+  const { resolveEmail } = await import("@/modules/notifications/dispatch");
+  if (!isEmailEnabled()) return "DISABLED";
+  const since = new Date(Date.now() - LOGIN_WINDOW_MS);
+  if (ip && (await db.auditLog.count({ where: { action: "auth.reset.requested", ip, createdAt: { gte: since } } })) >= FORGOT_MAX_PER_IP)
+    return "RATE_LIMITED";
+  const raw = z.string().trim().min(3).max(150).safeParse(identifier);
+  await audit({ action: "auth.reset.requested", ip, data: { identifier: raw.success ? raw.data.slice(0, 3) + "…" : null } });
+  if (!raw.success) return "SENT";
+  const id = raw.data.includes("@") ? raw.data.toLowerCase() : normalizeUsername(raw.data);
+  const user = await db.user.findFirst({ where: raw.data.includes("@") ? { email: id } : { username: id }, select: { id: true } });
+  if (!user) return "SENT";
+  const eligible = await loadEligibleUser(user.id);
+  const to = eligible.ok ? await resolveEmail(user.id) : null;
+  if (!to) return "SENT";
+  const token = await createPasswordResetToken(user.id, null, ip);
+  const base = (process.env.APP_URL ?? "").replace(/\/$/, "");
+  await sendMail({
+    to,
+    subject: "Şifre yenileme",
+    text: "Şifrenizi yenilemek için aşağıdaki bağlantıyı kullanın. Bağlantı 1 saat geçerlidir ve tek kullanımlıktır.\nBu talebi siz yapmadıysanız bu e-postayı dikkate almayın.",
+    link: `${base}/sifre-sifirla?token=${token}`,
+  }).catch((e) => console.error("[şifre sıfırlama e-postası]", e instanceof Error ? e.message : e));
+  return "SENT";
+}

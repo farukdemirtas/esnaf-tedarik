@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EmptyState, FilterBar, FilterInput, FilterSelect, LinkButton, PageHeader, Pagination, StatusBadge, Table, Td, toOptions } from "@/components/panel/ui";
@@ -44,7 +45,7 @@ export default async function ProductsPage({
               <Td className="w-14">
                 {p.images[0] ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={`/api/files/${p.images[0].path}`} alt="" className="h-10 w-10 rounded object-cover" />
+                  <img src={withBase(`/api/files/${p.images[0].path}`)} alt="" className="h-10 w-10 rounded object-cover" />
                 ) : (
                   <div className="h-10 w-10 rounded bg-slate-100" />
                 )}

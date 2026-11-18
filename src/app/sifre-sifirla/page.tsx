@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Alert } from "@/components/brand";
@@ -13,7 +14,7 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
       <div className="space-y-4">
         {sp.hata && <Alert tone="error">{PASSWORD_ERRORS[sp.hata] ?? PASSWORD_ERRORS.eksik}</Alert>}
         {sp.token ? (
-          <form method="post" action="/api/auth/reset-password" className="space-y-4">
+          <form method="post" action={withBase("/api/auth/reset-password")} className="space-y-4">
             <input type="hidden" name="token" value={sp.token} />
             <NewPasswordFields />
             <button type="submit" className="btn-primary w-full">

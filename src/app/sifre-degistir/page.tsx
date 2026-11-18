@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import { Alert } from "@/components/brand";
 import { AuthShell } from "@/components/auth-shell";
@@ -23,7 +24,7 @@ export default async function ChangePasswordPage({ searchParams }: { searchParam
     >
       <div className="space-y-4">
         {sp.hata && <Alert tone="error">{PASSWORD_ERRORS[sp.hata] ?? PASSWORD_ERRORS.eksik}</Alert>}
-        <form method="post" action="/api/auth/change-password" className="space-y-4">
+        <form method="post" action={withBase("/api/auth/change-password")} className="space-y-4">
           <div>
             <label htmlFor="currentPassword" className="label">
               Mevcut şifre
@@ -42,7 +43,7 @@ export default async function ChangePasswordPage({ searchParams }: { searchParam
               Panele dön
             </a>
           )}
-          <form method="post" action="/api/auth/logout" className="flex-1">
+          <form method="post" action={withBase("/api/auth/logout")} className="flex-1">
             <button className="btn-secondary w-full" type="submit">
               Çıkış
             </button>

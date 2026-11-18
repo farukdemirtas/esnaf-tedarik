@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const csp = [
   "default-src 'self'",
@@ -16,10 +17,11 @@ const csp = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  ...(basePath ? { basePath } : {}),
   poweredByHeader: false,
   serverExternalPackages: ["@node-rs/argon2"],
   // Ürün görseli yükleme için (görsel sınırı 5 MB, form alanlarıyla birlikte)
-  experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  experimental: { serverActions: { bodySizeLimit: "16mb" } },
   async headers() {
     return [
       {

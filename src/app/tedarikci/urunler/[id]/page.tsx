@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Alert } from "@/components/brand";
@@ -219,7 +220,7 @@ export default async function MyOfferPage({ params, searchParams }: { params: Pr
           <div className="space-y-4">
             {p.images[0] ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={`/api/files/${p.images[0].path}`} alt={p.name} className="aspect-square w-full max-w-[260px] rounded-lg border border-slate-200 object-contain" />
+              <img src={withBase(`/api/files/${p.images[0].path}`)} alt={p.name} className="aspect-square w-full max-w-[260px] rounded-lg border border-slate-200 object-contain" />
             ) : (
               <div className="aspect-square w-full max-w-[260px] rounded-lg bg-slate-100" />
             )}

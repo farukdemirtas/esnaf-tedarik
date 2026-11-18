@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionForm, Field, SelectField, SubmitButton, TextareaField } from "@/components/form";
@@ -57,7 +58,7 @@ export default async function MyProductRequestsPage() {
                 <li key={q.id} className="flex flex-wrap gap-4 py-4">
                   {q.imagePath ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={`/api/files/${q.imagePath}`} alt="" className="h-16 w-16 shrink-0 rounded-lg border border-slate-200 object-contain" />
+                    <img src={withBase(`/api/files/${q.imagePath}`)} alt="" className="h-16 w-16 shrink-0 rounded-lg border border-slate-200 object-contain" />
                   ) : (
                     <div className="h-16 w-16 shrink-0 rounded-lg bg-slate-100" />
                   )}

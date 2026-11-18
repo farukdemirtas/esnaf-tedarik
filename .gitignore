@@ -41,4 +41,6 @@ yarn-error.log*
 next-env.d.ts
 storage/
 !.env.example
+!.env.production.example
+*.bundle
 .dev-credentials.txt

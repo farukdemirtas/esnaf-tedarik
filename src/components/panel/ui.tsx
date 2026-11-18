@@ -4,17 +4,24 @@ import type { Tone } from "@/lib/format";
 export function StatCard({ label, value, hint, href }: { label: string; value: number | string; hint?: string; href?: string }) {
   const inner = (
     <>
-      <div className="text-sm font-medium text-slate-500">{label}</div>
-      <div className="mt-2 text-3xl font-bold tabular-nums text-slate-900">{value}</div>
+      <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</div>
+      <div className="mt-2 font-display text-3xl font-semibold tabular-nums tracking-tight text-brand-950">{value}</div>
       {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
     </>
   );
+  const cls = "card group relative block overflow-hidden p-5 hover:-translate-y-0.5 hover:border-brand-200/80 hover:shadow-[0_18px_40px_-24px_rgba(20,80,100,0.45)]";
+  const body = (
+    <>
+      <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-brand-100/50 transition group-hover:bg-accent-300/30" aria-hidden />
+      <div className="relative">{inner}</div>
+    </>
+  );
   return href ? (
-    <Link href={href} className="card block p-5 transition hover:border-brand-200 hover:shadow">
-      {inner}
+    <Link href={href} className={cls}>
+      {body}
     </Link>
   ) : (
-    <div className="card p-5">{inner}</div>
+    <div className={cls}>{body}</div>
   );
 }
 
@@ -38,8 +45,8 @@ export function PageHeader({
       )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-          {description && <p className="mt-1 text-slate-600">{description}</p>}
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-brand-950 sm:text-[1.75rem]">{title}</h1>
+          {description && <p className="mt-1.5 max-w-2xl text-slate-600">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
@@ -49,7 +56,8 @@ export function PageHeader({
 
 export function EmptyState({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="card px-6 py-10 text-center">
+    <div className="card px-6 py-12 text-center">
+      <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-brand-50 ring-1 ring-brand-100" aria-hidden />
       <div className="font-semibold text-slate-800">{title}</div>
       {children && <div className="mt-1 text-sm text-slate-500">{children}</div>}
     </div>
@@ -61,7 +69,7 @@ export function Section({ title, actions, children, className = "" }: { title?: 
     <section className={`card ${className}`}>
       {(title || actions) && (
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-5 py-3.5">
-          {title && <h2 className="font-semibold text-slate-900">{title}</h2>}
+          {title && <h2 className="font-display text-lg font-semibold tracking-tight text-brand-950">{title}</h2>}
           {actions}
         </div>
       )}
@@ -71,15 +79,15 @@ export function Section({ title, actions, children, className = "" }: { title?: 
 }
 
 const TONES: Record<Tone, string> = {
-  green: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
-  amber: "bg-amber-50 text-amber-800 ring-amber-600/20",
-  red: "bg-red-50 text-red-700 ring-red-600/20",
-  slate: "bg-slate-100 text-slate-700 ring-slate-500/20",
-  blue: "bg-brand-50 text-brand-700 ring-brand-600/20",
+  green: "bg-emerald-50 text-emerald-800 ring-emerald-600/15",
+  amber: "bg-amber-50 text-amber-900 ring-amber-600/15",
+  red: "bg-red-50 text-red-800 ring-red-600/15",
+  slate: "bg-slate-100/90 text-slate-700 ring-slate-500/15",
+  blue: "bg-brand-50 text-brand-800 ring-brand-600/15",
 };
 
 export function Badge({ tone = "slate", children }: { tone?: Tone; children: React.ReactNode }) {
-  return <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${TONES[tone]}`}>{children}</span>;
+  return <span className={`inline-flex items-center whitespace-nowrap rounded-lg px-2 py-0.5 text-xs font-semibold tracking-wide ring-1 ring-inset ${TONES[tone]}`}>{children}</span>;
 }
 
 export function StatusBadge({ map, value }: { map: Record<string, { label: string; tone: Tone }>; value: string }) {
@@ -92,16 +100,16 @@ export function Table({ head, children }: { head: React.ReactNode[]; children: R
   return (
     <div className="card overflow-x-auto">
       <table className="w-full min-w-[640px] text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <thead className="border-b border-slate-200/80 bg-brand-50/50 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">
           <tr>
             {head.map((h, i) => (
-              <th key={i} className="px-4 py-3">
+              <th key={i} className="px-4 py-3.5">
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">{children}</tbody>
+        <tbody className="divide-y divide-slate-100/90">{children}</tbody>
       </table>
     </div>
   );

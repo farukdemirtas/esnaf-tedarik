@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -36,7 +37,7 @@ export default async function LoginPage({
         {sp.cikis && <Alert tone="info">Güvenli çıkış yapıldı.</Alert>}
         {sp.sifirlandi && <Alert tone="success">Şifreniz yenilendi. Yeni şifrenizle giriş yapabilirsiniz.</Alert>}
 
-        <form method="post" action="/api/auth/login" className="space-y-4">
+        <form method="post" action={withBase("/api/auth/login")} className="space-y-4">
           <input type="hidden" name="next" value={sp.next ?? ""} />
           <div>
             <label htmlFor="username" className="label">
@@ -55,11 +56,11 @@ export default async function LoginPage({
           </button>
         </form>
 
-        <div className="flex flex-col gap-2 border-t border-slate-200 pt-4 text-sm">
-          <Link href="/sifremi-unuttum" className="text-brand-600 hover:underline">
+        <div className="flex flex-col gap-2.5 border-t border-slate-200/80 pt-4 text-sm">
+          <Link href="/sifremi-unuttum" className="font-medium text-brand-700 transition hover:text-brand-900 hover:underline">
             Şifremi unuttum
           </Link>
-          <Link href="/basvuru" className="text-brand-600 hover:underline">
+          <Link href="/basvuru" className="font-medium text-brand-700 transition hover:text-brand-900 hover:underline">
             Üyelik veya tedarikçi başvurusu
           </Link>
         </div>

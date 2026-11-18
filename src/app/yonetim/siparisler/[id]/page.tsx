@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -173,7 +174,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <div className="mt-1 font-mono text-xs">{inv.documentNumber}</div>
                     {inv.amount && <div className="mt-1 tabular-nums">{fmtMoney(inv.amount)}</div>}
                     {inv.filePath && (
-                      <a href={`/api/files/${inv.filePath}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-brand-600 hover:underline">
+                      <a href={withBase(`/api/files/${inv.filePath}`)} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-brand-600 hover:underline">
                         Belgeyi aç
                       </a>
                     )}

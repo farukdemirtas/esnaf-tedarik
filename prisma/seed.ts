@@ -96,6 +96,11 @@ async function seedChamber() {
     data: SAMSUN_DISTRICTS.map((name) => ({ chamberId: CHAMBER_ID, city: "Samsun", name })),
     skipDuplicates: true,
   });
+  for (const slot of [
+    { code: "home-top", name: "Mağaza ana sayfa üst bant", width: 1200, height: 300 },
+    { code: "products-top", name: "Ürünler sayfası üst bant", width: 1200, height: 200 },
+  ])
+    await db.adSlot.upsert({ where: { chamberId_code: { chamberId: CHAMBER_ID, code: slot.code } }, update: {}, create: { chamberId: CHAMBER_ID, ...slot } });
   await db.setting.upsert({
     where: { chamberId_key: { chamberId: CHAMBER_ID, key: "dues.blockOrderingAfterOverdueCount" } },
     update: {},

@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import { ActionForm, Field, SubmitButton, TextareaField } from "@/components/form";
 import { DL, PageHeader, Section, StatusBadge } from "@/components/panel/ui";
@@ -74,7 +75,7 @@ export default async function SupplierProfilePage() {
               {s.logoPath ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`/api/files/${s.logoPath}`}
+                  src={withBase(`/api/files/${s.logoPath}`)}
                   alt={`${s.tradeName} logosu`}
                   className="h-32 w-32 rounded-lg border border-slate-200 bg-white object-contain p-2"
                 />

@@ -1,46 +1,110 @@
 @import "tailwindcss";
 
-/* ESNAF TEDARİK kurumsal renkleri (geçici; Oda logosu/renkleri gelince güncellenecek) */
+/*
+  ESNAF TEDARİK — görsel dil
+  Derin deniz mavisi + bakır amber; esnaf/toptan ticaret hissi.
+*/
 @theme {
-  --color-brand-50: #eef5fb;
-  --color-brand-100: #d5e6f4;
-  --color-brand-200: #abcde9;
-  --color-brand-500: #2367a3;
-  --color-brand-600: #1b5487;
-  --color-brand-700: #154269;
-  --color-brand-800: #0f324f;
-  --color-brand-900: #0a2236;
-  --color-accent-400: #f2b54a;
-  --color-accent-500: #e49b1c;
-  --color-accent-600: #c07f0e;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #eef8f9;
+  --color-brand-100: #d5eef2;
+  --color-brand-200: #a9dde6;
+  --color-brand-300: #6fc0cf;
+  --color-brand-400: #3a9fb3;
+  --color-brand-500: #1f7f96;
+  --color-brand-600: #17657a;
+  --color-brand-700: #145064;
+  --color-brand-800: #143f4f;
+  --color-brand-900: #123442;
+  --color-brand-950: #0a1f29;
+  --color-accent-300: #f3c978;
+  --color-accent-400: #e8b04a;
+  --color-accent-500: #d4941f;
+  --color-accent-600: #b87514;
+  --color-surface: #f3f6f4;
+  --color-ink: #12202a;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: #f4f6f9;
-  color: #16202b;
+  background-color: var(--color-surface);
+  background-image:
+    radial-gradient(ellipse 90% 55% at 0% -10%, rgba(31, 127, 150, 0.11), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(212, 148, 31, 0.08), transparent 50%),
+    linear-gradient(180deg, #f7faf8 0%, #eef3f1 100%);
+  background-attachment: fixed;
+  color: var(--color-ink);
+}
+
+@keyframes et-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes et-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes et-soft-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+@utility animate-rise {
+  animation: et-rise 0.55s ease-out both;
+}
+
+@utility animate-rise-delay {
+  animation: et-rise 0.65s ease-out 0.12s both;
 }
 
 /* Form öğeleri: bakkal esnafı için büyük, net dokunma alanları */
 @utility input {
-  @apply block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-200;
+  @apply block w-full rounded-xl border border-slate-200/90 bg-white/90 px-3.5 py-2.5 text-base text-slate-900 shadow-[inset_0_1px_2px_rgba(18,32,42,0.04)] outline-none backdrop-blur-sm transition placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/15;
 }
+
 @utility label {
-  @apply mb-1.5 block text-sm font-medium text-slate-700;
+  @apply mb-1.5 block text-sm font-semibold tracking-wide text-slate-600;
 }
+
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-base font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-base font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98];
 }
+
 @utility btn-primary {
-  @apply btn bg-brand-600 text-white hover:bg-brand-700 focus-visible:ring-brand-500;
+  @apply btn bg-brand-700 text-white shadow-[0_8px_20px_-10px_rgba(20,80,100,0.65)] hover:bg-brand-800 hover:shadow-[0_12px_24px_-10px_rgba(20,80,100,0.7)] focus-visible:ring-brand-500;
 }
+
 @utility btn-secondary {
-  @apply btn border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 focus-visible:ring-brand-500;
+  @apply btn border border-slate-200/90 bg-white/80 text-slate-800 shadow-sm backdrop-blur-sm hover:border-brand-200 hover:bg-white focus-visible:ring-brand-500;
 }
+
 @utility card {
-  @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  @apply rounded-2xl border border-white/70 bg-white/80 shadow-[0_10px_30px_-18px_rgba(18,32,42,0.35)] backdrop-blur-md transition duration-300;
 }

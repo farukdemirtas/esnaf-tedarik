@@ -13,7 +13,7 @@ import type { AuthContext } from "@/modules/auth/context";
 
 export type Granularity = "day" | "week" | "month";
 
-function parseRange(from?: string, to?: string) {
+export function parseRange(from?: string, to?: string) {
   const today = dateInput(new Date());
   const valid = (v?: string) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined);
   const toStr = valid(to) ?? today;

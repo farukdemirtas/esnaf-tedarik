@@ -61,6 +61,7 @@ export const PERMISSIONS = {
   "supplierSelf.orders.process": { group: "Tedarikçi (kendi)", description: "Sipariş durumunu güncelleme" },
   "supplierSelf.reports": { group: "Tedarikçi (kendi)", description: "Firma raporları" },
   "supplierSelf.users": { group: "Tedarikçi (kendi)", description: "Firma çalışanlarını yönetme" },
+  "supplierSelf.marketing": { group: "Tedarikçi (kendi)", description: "Paket, reklam, sponsorlu ürün ve dijital katalog" },
 
   // Üye (kendi işletmesi)
   "memberSelf.shop": { group: "Üye (kendi)", description: "Ürünlere göz atma ve karşılaştırma" },
@@ -138,6 +139,7 @@ export const ROLE_DEFINITIONS: Record<
       "supplierSelf.orders.process",
       "supplierSelf.reports",
       "supplierSelf.users",
+      "supplierSelf.marketing",
     ],
   },
   SUPPLIER_STAFF: {

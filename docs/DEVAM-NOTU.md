@@ -1,6 +1,6 @@
 # Devam Notu — Kaldığımız Yer
 
-Son güncelleme: 18.11.2026 · Durum: **Aşama 1–4 tamamlandı, Aşama 5 başlamadı.**
+Son güncelleme: 18.11.2026 · Durum: **Aşama 1–7 kod tarafı tamamlandı. Sıradaki: sunucu kurulumu ve pilot (bkz. `docs/07-yayin-kilavuzu.md`).**
 
 Bu belge, projeye başka bir bilgisayarda veya yeni bir Claude oturumunda devam edebilmek içindir. Yeni oturumda ilk iş olarak bu dosyayı ve `docs/01…04` raporlarını okutun.
 
@@ -47,7 +47,9 @@ DATABASE_URL="…_test…" APP_URL="http://localhost:3100" npx next start -p 310
 npm run test:e2e                                    # uçtan uca testler
 ```
 
-Son durumda **155/155 test** geçiyordu.
+Son durumda **249/249 test** geçiyordu (110 birim/servis + 139 uçtan uca).
+
+Demo verisi: `npm run db:demo` (tüm demo hesapların şifresi `55`; kullanıcı adları README'de).
 
 > Not: Eski bilgisayarda geliştirme veritabanı proje klasörünün yanında, 5433 portunda ayrı bir kümedeydi; yeni bilgisayarda normal PostgreSQL kurulumunu kullanın.
 
@@ -57,7 +59,8 @@ Son durumda **155/155 test** geçiyordu.
 - **Sunucu işlemleri** `src/actions/*.ts` (`"use server"`): yalnızca `runAction(auth => servis(...))` çağırır (`src/lib/action.ts`). Hatalar Türkçe mesaja çevrilir; `UserError(mesaj, alan)` alan altında gösterilir.
 - **Doğrulama** `src/lib/validation.ts` (Türkçe mesajlar, `zMoney`, `zQuantity`, `zDate`, `zPhone`…). Para `Decimal(12,2)`; kayan nokta yok. Fiyatlar **KDV hariç**.
 - **Formlar** `src/components/form` (`ActionForm`, `Field`…): hata olunca girilen değer korunur; geçici şifre tek seferlik kutuda gösterilir.
-- **Sayfa koruması:** Oda için `requireOdaPage(...)` (`src/lib/auth/oda.ts`, `/yonetim` ve `/personel` aynı sayfaları kullanır), tedarikçi için `requireSupplierPage(...)`. Üye paneli için Aşama 5'te aynı kalıpta `requireMemberPage` yazılacak.
+- **Sayfa koruması:** Oda için `requireOdaPage(...)` (`src/lib/auth/oda.ts`, `/yonetim` ve `/personel` aynı sayfaları kullanır), tedarikçi için `requireSupplierPage(...)`, üye için `requireMemberPage(...)` (`src/lib/auth/member-page.ts`).
+- **Fiyat:** her yerde `src/modules/pricing/engine.ts`; üye görünürlüğü her yerde `src/modules/shop/context.ts` (`visibleOfferWhere`).
 - **Denetim kaydı:** önemli her değişiklik `audit(...)`.
 - **Testler:** her modül için `tests/integration/*.test.ts` (gerçek test veritabanı) ve `tests/e2e/*.test.ts` (gerçek sunucu). Firma/üye izolasyonu mutlaka test edilir.
 - **Sahte veri yok:** Gösterge panelleri canlı veriden okur. TEST hesapları açıkça "TEST" etiketlidir, yalnızca geliştirme içindir.
@@ -76,19 +79,16 @@ Son durumda **155/155 test** geçiyordu.
 | Sipariş adres kopyası (`Order.addressSnapshot`) | `{ title, district, city, neighborhood?, line, contactName, phone }` |
 | Teslimat bölgesi | Üye, tedarikçinin ürünlerini yalnızca o tedarikçinin hizmet verdiği ilçedeyse görür/sipariş verir |
 
-## 4. Sıradaki iş: Aşama 5 — Üye (Bakkal/Market) Paneli
+## 4. Sıradaki iş: sunucu kurulumu ve pilot
 
-Önerilen sıra (önce servisler + testler, sonra sayfalar):
+Kod tarafı tamam. Kalanlar (ayrıntı `docs/07-yayin-kilavuzu.md`):
+1. Sunucu (Docker Compose + Nginx + HTTPS), yedekleme cron'u ve sunucu dışı yedek kopyası.
+2. İsteğe bağlı: SMTP bilgileri (`SMTP_URL`, `MAIL_FROM`) → e-posta bildirimleri ve kendi kendine şifre sıfırlama açılır.
+3. SMS sağlayıcısı seçilirse: `Notification.channel = SMS` için gönderici (`src/modules/notifications/dispatch.ts` örneğiyle).
+4. KVKK metninin hukukçu onayı, gerçek verilerin girişi, kullanıcı eğitimleri (`docs/kilavuz-*.md`).
+5. Dış sızma testi önerilir.
 
-1. **Fiyat motoru** (`src/modules/pricing`): liste fiyatı → onaylı ve tarihi geçerli kampanya indirimleri (kademe `minQty`'ye göre) → en düşük tek fiyat. Hem sepette hem siparişte aynı fonksiyon.
-2. **Katalog okuma** (üye görünümü): yalnızca aktif ürün + aktif, kaldırılmamış teklif + onaylı ve askıda olmayan tedarikçi + üyenin varsayılan adres ilçesine hizmet veren tedarikçi. Arama, kategori, marka, tedarikçi, kampanyalı, stokta filtreleri.
-3. **Fiyat karşılaştırma:** ürün sayfasında aynı ürünün tüm tedarikçi teklifleri (paket, fiyat, kampanya fiyatı, birim fiyat, min. sipariş, teslimat günleri, stok durumu).
-4. **Sepet** (`Cart`, `CartItem`): tedarikçiye göre gruplu; miktar kuralları (`minOrderQty`, `orderStep`), stok, tedarikçi/ilçe min. tutarı uyarıları; fiyat değişti uyarısı (`seenPackPrice`).
-5. **Sipariş motoru** (tek transaction): aidat engeli, idempotency anahtarı, fiyatları yeniden hesapla (sepettekinden farklıysa durdur ve onay iste), kuralları doğrula, koşullu stok düşümü (`UPDATE "Stock" SET quantity = quantity - n WHERE … AND quantity >= n`), `Order` + tedarikçi başına `SupplierOrder` (`ET-2026-000123-01`), satır anlık kopyası, `OrderSequence` ile numara, sepeti boşalt, durum geçmişi, tedarikçiye bildirim, denetim kaydı. Eşzamanlı sipariş ve çift tıklama testleri şart.
-6. **Üye sayfaları** (`/magaza`): ana sayfa (Odaya özel kampanyalar, indirimli, en çok tercih edilen, yeni, tedarikçiler, duyurular), kategori, arama, ürün + karşılaştırma, tedarikçi sayfası, favoriler, sepet, sipariş onayı, siparişlerim (ana sipariş → alt siparişler, ayrı durumlar), sipariş detayı + "Beklemede" iken iptal + **tekrar sipariş**, hesabım (adresler, şifre, aidat durumu), bildirimler (`NotificationsList` hazır; layout'a `notificationsHref="/magaza/bildirimler"` ekleyin).
-7. **Yönetici raporları ve grafikler** (sipariş verisi oluştuktan sonra).
-
-Sayfalar, önceki aşamalarda olduğu gibi servisler yazıldıktan sonra paralel ajanlarla yazılabilir; briefte servis dosyalarını ve örnek sayfaları (`src/app/tedarikci/**`, `src/app/yonetim/**`) gösterin.
+Not: Docker imajı geliştirme ortamında (ağ kısıtı nedeniyle) derlenemedi; ilk sunucu kurulumunda `docker compose build` çıktısı kontrol edilmelidir.
 
 ## 5. Bilinen notlar
 

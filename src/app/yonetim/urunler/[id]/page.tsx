@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -80,7 +81,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {p.images.map((img) => (
               <div key={img.id} className="space-y-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/files/${img.path}`} alt={p.name} className="aspect-square w-full rounded-lg border border-slate-200 object-contain" />
+                <img src={withBase(`/api/files/${img.path}`)} alt={p.name} className="aspect-square w-full rounded-lg border border-slate-200 object-contain" />
                 <ActionForm action={deleteProductImageAction} compact confirm="Görsel silinsin mi?">
                   <input type="hidden" name="id" value={img.id} />
                   <SubmitButton variant="small-danger">Sil</SubmitButton>

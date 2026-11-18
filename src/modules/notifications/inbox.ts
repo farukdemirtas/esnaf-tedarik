@@ -6,12 +6,12 @@ import type { AuthContext } from "@/modules/auth/context";
 /** Kullanıcının kendi bildirimleri (her kullanıcı yalnızca kendisininkini görür) */
 
 export function unreadCount(userId: string) {
-  return db.notification.count({ where: { userId, readAt: null } });
+  return db.notification.count({ where: { userId, readAt: null, channel: "IN_APP" } });
 }
 
 export async function listMyNotifications(auth: AuthContext, f: { page?: string; unread?: string }) {
   const { skip, take, page, size } = pageArgs(f.page, 30);
-  const where = { userId: auth.userId, ...(f.unread === "1" ? { readAt: null } : {}) };
+  const where = { userId: auth.userId, channel: "IN_APP" as const, ...(f.unread === "1" ? { readAt: null } : {}) };
   const [items, total] = await Promise.all([
     db.notification.findMany({ where, orderBy: { createdAt: "desc" }, skip, take }),
     db.notification.count({ where }),
@@ -25,6 +25,6 @@ export async function markNotificationRead(auth: AuthContext, id: string) {
 }
 
 export async function markAllNotificationsRead(auth: AuthContext) {
-  const r = await db.notification.updateMany({ where: { userId: auth.userId, readAt: null }, data: { readAt: new Date() } });
+  const r = await db.notification.updateMany({ where: { userId: auth.userId, readAt: null, channel: "IN_APP" }, data: { readAt: new Date() } });
   return r.count;
 }

@@ -22,21 +22,21 @@ const OPTIONS = [
 export default function ApplicationChoicePage() {
   return (
     <PublicShell>
-      <h1 className="text-2xl font-bold text-slate-900">Başvuru</h1>
-      <p className="mt-1.5 text-slate-600">
+      <h1 className="font-display text-3xl font-semibold tracking-tight text-brand-950">Başvuru</h1>
+      <p className="mt-2 text-slate-600">
         Başvurunuz Oda tarafından incelenir. Onaylandığında giriş bilgileriniz size iletilir.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-7 grid gap-4 sm:grid-cols-2">
         {OPTIONS.map((o) => (
           <Link
             key={o.href}
             href={o.href}
-            className="card group flex flex-col p-6 transition hover:border-brand-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="card group flex flex-col p-6 hover:-translate-y-0.5 hover:border-brand-200/80 hover:shadow-[0_18px_40px_-24px_rgba(20,80,100,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
-            <h2 className="text-lg font-bold text-brand-800">{o.title}</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight text-brand-900">{o.title}</h2>
             <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{o.text}</p>
-            <span className="mt-4 text-sm font-semibold text-brand-600 group-hover:underline">{o.cta} →</span>
+            <span className="mt-5 text-sm font-semibold text-brand-700 transition group-hover:text-brand-900 group-hover:underline">{o.cta} →</span>
           </Link>
         ))}
       </div>

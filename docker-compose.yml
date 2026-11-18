@@ -1,0 +1,51 @@
+# Tek sunucu kurulumu: PostgreSQL + uygulama + bildirim işçisi.
+# Kullanım (sunucuda):  cp .env.production.example .env.production && (doldurun) && docker compose up -d --build
+# Nginx bu servislerin önünde HTTPS sonlandırır (deploy/nginx.conf).
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: esnaf_tedarik
+      POSTGRES_USER: esnaf
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD tanımlanmalı}
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=tr-TR"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esnaf -d esnaf_tedarik"]
+      interval: 10s
+      retries: 5
+
+  migrate:
+    build: .
+    env_file: .env.production
+    command: ["npx", "prisma", "migrate", "deploy"]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    command: ["npx", "tsx", "scripts/worker.ts"]
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+volumes:
+  pgdata:
+  uploads:

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { assertOfferLimit } from "@/modules/revenue/packages";
 import { audit } from "@/lib/audit";
 import { assertPermission } from "@/lib/auth/assert";
 import { supplierIdOf } from "@/lib/auth/scope";
@@ -147,6 +148,7 @@ export async function createOffer(auth: AuthContext, input: unknown) {
   if (!product) throw new UserError("Ürün katalogda bulunamadı veya yayında değil.", "productId");
   const dup = await db.supplierProduct.findUnique({ where: { supplierId_productId_packType: { supplierId, productId: d.productId, packType: d.packType } } });
   if (dup) throw new UserError("Bu ürünü bu paket türüyle zaten satıyorsunuz. Mevcut kaydı düzenleyin.", "packType");
+  await assertOfferLimit(supplierId);
 
   const offer = await db.$transaction(async (tx) => {
     const o = await tx.supplierProduct.create({

@@ -1,3 +1,4 @@
+import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -156,7 +157,7 @@ export default async function NewOfferPage({ searchParams }: { searchParams: Pro
                 <div className="flex gap-4">
                   {p.images[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={`/api/files/${p.images[0].path}`} alt="" className="h-20 w-20 shrink-0 rounded-lg border border-slate-200 object-contain" />
+                    <img src={withBase(`/api/files/${p.images[0].path}`)} alt="" className="h-20 w-20 shrink-0 rounded-lg border border-slate-200 object-contain" />
                   ) : (
                     <div className="h-20 w-20 shrink-0 rounded-lg bg-slate-100" />
                   )}
@@ -197,7 +198,7 @@ function ProductSummary({ p }: { p: Awaited<ReturnType<typeof getCatalogProductF
     <div className="space-y-3">
       {p.images[0] ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={`/api/files/${p.images[0].path}`} alt={p.name} className="aspect-square w-full max-w-[220px] rounded-lg border border-slate-200 object-contain" />
+        <img src={withBase(`/api/files/${p.images[0].path}`)} alt={p.name} className="aspect-square w-full max-w-[220px] rounded-lg border border-slate-200 object-contain" />
       ) : (
         <div className="aspect-square w-full max-w-[220px] rounded-lg bg-slate-100" />
       )}
