@@ -78,13 +78,13 @@ const FONT: Record<string, string[]> = {
   " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
 };
 
-function parseHex(hex: string): [number, number, number] {
+export function parseHex(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   const n = Number.parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function glyph(ch: string) {
+export function glyph(ch: string) {
   return FONT[ch] ?? FONT[ch.toLocaleUpperCase("tr")] ?? ["11111", "10001", "10001", "10001", "10001", "10001", "11111"];
 }
 

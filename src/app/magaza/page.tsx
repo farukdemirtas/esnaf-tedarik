@@ -20,76 +20,46 @@ function daysLeft(endsAt: Date) {
   return Math.max(0, Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000));
 }
 
-function CampaignCard({ campaign: c, hero = false, span = false }: { campaign: HomeCampaign; hero?: boolean; span?: boolean }) {
-  const wide = hero;
+function CampaignCard({ campaign: c }: { campaign: HomeCampaign }) {
   const left = daysLeft(c.endsAt);
   const href = `/magaza/urunler?kampanya=1&tedarikci=${encodeURIComponent(c.supplierId)}`;
   return (
-    <li className={span ? "lg:col-span-2" : "flex"}>
+    <li className="flex">
       <Link
         href={href}
-        className={`group relative isolate flex w-full flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-0.5 ${
-          wide ? "min-h-[250px] justify-between p-6 text-white sm:p-8" : "border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-brand-50 p-5 shadow-[0_16px_40px_-28px_rgba(184,117,20,0.9)] hover:shadow-[0_22px_44px_-24px_rgba(184,117,20,0.85)]"
-        }`}
-        style={
-          wide
-            ? { background: "linear-gradient(128deg, #0a1f29 0%, #145064 52%, #1c6d84 100%)" }
-            : undefined
-        }
+        className="group flex h-full min-h-[440px] w-full flex-col rounded-2xl border-2 border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-600 hover:shadow-[0_16px_32px_-20px_rgba(20,80,100,0.55)]"
       >
-        {wide && (
-          <>
-            <div className="pointer-events-none absolute -top-16 -right-10 h-56 w-56 rounded-full bg-accent-400/25 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 left-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-            <div
-              className="pointer-events-none absolute inset-0 opacity-[0.14]"
-              style={{
-                backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
-                backgroundSize: "42px 42px",
-                maskImage: "radial-gradient(ellipse at 70% 40%, black 10%, transparent 70%)",
-              }}
-            />
-            <span aria-hidden className="pointer-events-none absolute right-6 bottom-2 font-display text-7xl font-semibold tracking-tight text-white/10 sm:text-8xl">
-              ÖZEL
-            </span>
-          </>
-        )}
-        {!wide && <span className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-accent-400 to-accent-600" aria-hidden />}
+        <div className="flex items-start justify-between gap-3">
+          <span className={`rounded-md px-2 py-1 text-[11px] font-bold tracking-[0.12em] uppercase ${c.featured ? "bg-brand-800 text-white" : "bg-accent-400 text-brand-950"}`}>
+            {c.featured ? "Öne çıkan" : "Kampanya"}
+          </span>
+          <span
+            aria-hidden
+            className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 border-slate-300 bg-white transition group-hover:border-brand-700 group-hover:bg-brand-700"
+          >
+            <span className="h-2 w-2 rounded-[2px] bg-transparent group-hover:bg-white" />
+          </span>
+        </div>
+        <p className="mt-5 text-xs font-semibold tracking-wide text-slate-500 uppercase">{c.supplier.tradeName}</p>
+        <h3 className="mt-2 font-display text-xl font-semibold leading-snug tracking-tight text-brand-950">{c.title}</h3>
+        {c.description && <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-slate-600">{c.description}</p>}
         {c.imagePath && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={withBase(`/api/files/${c.imagePath}`)}
-            alt=""
-            className={`pointer-events-none absolute inset-y-0 right-0 hidden object-cover sm:block ${wide ? "w-2/5 opacity-80" : "w-1/3 opacity-70"}`}
-          />
+          <img src={withBase(`/api/files/${c.imagePath}`)} alt="" className="mt-4 h-28 w-full rounded-xl object-cover" />
         )}
-        <div className={`relative ${wide ? "" : "pl-2"}`}>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.14em] uppercase ${wide ? "bg-accent-400 text-brand-950" : "bg-accent-400/20 text-accent-600"}`}>
-              {c.featured ? "Öne çıkan" : "Kampanya"}
+        <div className="mt-auto border-t border-slate-100 pt-4">
+          <div className="flex items-end justify-between gap-3">
+            <span>
+              <span className="block font-display text-3xl font-semibold leading-none tabular-nums text-brand-800">{left}</span>
+              <span className="text-[11px] font-medium text-slate-500">gün kaldı</span>
             </span>
-            <span className={`text-xs font-semibold ${wide ? "text-brand-100" : "text-slate-500"}`}>{c.supplier.tradeName}</span>
-          </div>
-          <h3 className={`mt-3 font-display font-semibold tracking-tight ${wide ? "max-w-xl text-3xl leading-tight sm:text-4xl" : "text-xl text-brand-950"}`}>
-            {c.title}
-          </h3>
-          {c.description && (
-            <p className={`mt-2 max-w-xl text-sm leading-relaxed ${wide ? "line-clamp-2 text-brand-100/90" : "line-clamp-2 text-slate-600"}`}>{c.description}</p>
-          )}
-        </div>
-        <div className={`relative mt-6 flex flex-wrap items-end justify-between gap-3 ${wide ? "" : "pl-2"}`}>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-2xl px-3 py-2 ${wide ? "bg-white/10" : "bg-white/80"}`}>
-              <span className={`block font-display text-2xl font-semibold leading-none tabular-nums ${wide ? "text-accent-300" : "text-brand-800"}`}>{left}</span>
-              <span className={`text-[11px] font-medium ${wide ? "text-brand-100" : "text-slate-500"}`}>gün kaldı</span>
-            </span>
-            <span className={`text-sm ${wide ? "text-brand-100" : "text-slate-600"}`}>
+            <span className="text-right text-sm text-slate-600">
               {c._count.discounts} ürün
-              <span className={`block text-xs ${wide ? "text-white/70" : "text-slate-500"}`}>Son gün {fmtDate(c.endsAt)}</span>
+              <span className="block text-xs text-slate-500">Son gün {fmtDate(c.endsAt)}</span>
             </span>
           </div>
-          <span className={`text-sm font-semibold ${wide ? "text-accent-300" : "text-brand-800"}`}>
-            Kampanyayı gör <span className="inline-block transition group-hover:translate-x-0.5">→</span>
+          <span className="mt-4 flex items-center justify-center rounded-lg bg-brand-50 py-2 text-sm font-semibold text-brand-800 transition group-hover:bg-brand-800 group-hover:text-white">
+            Kampanyayı seç
           </span>
         </div>
       </Link>
@@ -193,14 +163,9 @@ export default async function MemberHome({ searchParams }: { searchParams: Promi
                   Tümünü gör →
                 </Link>
               </div>
-              <ul className="grid gap-4 lg:grid-cols-2">
-                {home.campaigns.map((c, i) => (
-                  <CampaignCard
-                    key={c.id}
-                    campaign={c}
-                    hero={i === 0}
-                    span={i === 0 || (home.campaigns.length % 2 === 0 && i === home.campaigns.length - 1)}
-                  />
+              <ul className="grid grid-cols-[repeat(auto-fill,minmax(240px,280px))] items-stretch gap-4">
+                {home.campaigns.map((c) => (
+                  <CampaignCard key={c.id} campaign={c} />
                 ))}
               </ul>
             </section>

@@ -21,7 +21,9 @@ import * as cart from "@/modules/shop/cart";
 import * as memberOrders from "@/modules/orders/member";
 import * as supplierOrders from "@/modules/orders/supplier";
 import { ensureSlots } from "@/modules/revenue/ads";
-import { minimalPdf, renderLabeledCard } from "./card";
+import { renderBanner, renderCatalogCover, renderProductArt } from "./art";
+import { minimalPdf } from "./card";
+import { photoForSlug } from "./photo-for";
 import { DEMO_MEMBERS, DEMO_PASSWORD, DEMO_PRODUCTS, DEMO_SUPPLIERS, DEMO_USERNAMES, DEMO_USERS, type DemoProduct } from "./data";
 
 const CH = "chamber-samsun";
@@ -32,18 +34,16 @@ const asset = (f: string) => readFile(path.join(ASSETS, f));
 
 async function productImage(p: DemoProduct) {
   try {
-    return await asset(`${p.slug}.png`);
+    return await asset(`photos/${photoForSlug(p.slug)}`);
   } catch {
-    return renderLabeledCard({ title: p.name, subtitle: p.brand, color: p.color });
+    return renderProductArt(p);
   }
 }
 
-async function bannerImage(file: string, title: string, color: string, width: number, height: number) {
-  try {
-    return await asset(file);
-  } catch {
-    return renderLabeledCard({ title, subtitle: "ESNAF TEDARIK", color, width, height });
-  }
+async function bannerImage(file: string, _title: string, _color: string, _width: number, _height: number) {
+  if (file.startsWith("banner-products")) return renderBanner("cleaning");
+  if (file.startsWith("banner-home")) return renderBanner("drinks");
+  return renderCatalogCover();
 }
 
 async function catalogPdf() {

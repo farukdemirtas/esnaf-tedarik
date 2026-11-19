@@ -4,8 +4,8 @@ import { Logo } from "./brand";
 /** Giriş ve şifre sayfaları için ortak çerçeve */
 export function AuthShell({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <main className="grid min-h-dvh lg:grid-cols-[1.05fr_minmax(0,520px)]">
-      <section className="relative hidden overflow-hidden text-white lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-14">
+    <main className="grid min-h-dvh lg:grid-cols-[minmax(0,1.35fr)_minmax(0,440px)]">
+      <section className="relative hidden overflow-hidden text-white lg:flex lg:items-center lg:p-10 xl:p-14">
         <div
           className="absolute inset-0"
           style={{
@@ -33,35 +33,30 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           }}
         />
 
-        <div className="relative z-10 animate-rise">
-          <Logo size="lg" inverted />
+        <div className="relative z-10 grid w-full items-center gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(220px,42%)] xl:gap-10">
+          <div className="animate-rise">
+            <Logo size="lg" inverted />
+            <p className="mt-8 mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-accent-300">Esnaf odası platformu</p>
+            <h2 className="font-display text-3xl font-semibold leading-[1.15] tracking-tight xl:text-[2.65rem]">
+              Bakkal ve marketler için
+              <span className="block text-accent-300">tek noktadan toptan tedarik</span>
+            </h2>
+            <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-brand-100/95">
+              {[
+                "Farklı tedarikçilerin fiyatlarını tek ekranda karşılaştırın",
+                "Tek sepetle birden fazla firmaya sipariş verin",
+                "Odaya özel kampanyalardan yararlanın",
+              ].map((item) => (
+                <li key={item} className="flex gap-3">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-400" aria-hidden />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-8 text-sm text-brand-100/80">Samsun Bakkallar ve Her Çeşit Bayiler Esnaf Odası</p>
+          </div>
+          <DeliveryScene className="mx-auto h-auto w-full max-w-[460px] drop-shadow-[0_18px_30px_rgba(0,0,0,0.18)]" />
         </div>
-
-        <div className="relative z-10 flex flex-1 items-center justify-center py-4">
-          <DeliveryScene className="h-auto max-h-[250px] w-full max-w-[640px] drop-shadow-[0_18px_30px_rgba(0,0,0,0.18)]" />
-        </div>
-
-        <div className="relative z-10 max-w-lg animate-rise-delay">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-accent-300">Esnaf odası platformu</p>
-          <h2 className="font-display text-4xl font-semibold leading-[1.15] tracking-tight xl:text-[2.75rem]">
-            Bakkal ve marketler için
-            <span className="block text-accent-300">tek noktadan toptan tedarik</span>
-          </h2>
-          <ul className="mt-8 space-y-3.5 text-[15px] leading-relaxed text-brand-100/95">
-            {[
-              "Farklı tedarikçilerin fiyatlarını tek ekranda karşılaştırın",
-              "Tek sepetle birden fazla firmaya sipariş verin",
-              "Odaya özel kampanyalardan yararlanın",
-            ].map((item) => (
-              <li key={item} className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-400" aria-hidden />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <p className="relative z-10 text-sm text-brand-100/80">Samsun Bakkallar ve Her Çeşit Bayiler Esnaf Odası</p>
       </section>
 
       <section className="relative flex flex-col justify-center px-4 py-10 sm:px-10">
