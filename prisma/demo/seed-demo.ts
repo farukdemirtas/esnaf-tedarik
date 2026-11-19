@@ -21,13 +21,38 @@ import * as cart from "@/modules/shop/cart";
 import * as memberOrders from "@/modules/orders/member";
 import * as supplierOrders from "@/modules/orders/supplier";
 import { ensureSlots } from "@/modules/revenue/ads";
-import { DEMO_MEMBERS, DEMO_PASSWORD, DEMO_PRODUCTS, DEMO_SUPPLIERS, DEMO_USERNAMES, DEMO_USERS } from "./data";
+import { minimalPdf, renderLabeledCard } from "./card";
+import { DEMO_MEMBERS, DEMO_PASSWORD, DEMO_PRODUCTS, DEMO_SUPPLIERS, DEMO_USERNAMES, DEMO_USERS, type DemoProduct } from "./data";
 
 const CH = "chamber-samsun";
 const ASSETS = path.join(__dirname, "assets");
 const DAY = 86400_000;
 const D = (v: number | string) => new Prisma.Decimal(v);
 const asset = (f: string) => readFile(path.join(ASSETS, f));
+
+async function productImage(p: DemoProduct) {
+  try {
+    return await asset(`${p.slug}.png`);
+  } catch {
+    return renderLabeledCard({ title: p.name, subtitle: p.brand, color: p.color });
+  }
+}
+
+async function bannerImage(file: string, title: string, color: string, width: number, height: number) {
+  try {
+    return await asset(file);
+  } catch {
+    return renderLabeledCard({ title, subtitle: "ESNAF TEDARIK", color, width, height });
+  }
+}
+
+async function catalogPdf() {
+  try {
+    return await asset("catalog.pdf");
+  } catch {
+    return minimalPdf();
+  }
+}
 
 async function roleId(code: RoleCode) {
   return (await db.role.findUniqueOrThrow({ where: { code } })).id;
@@ -80,7 +105,9 @@ async function resetDemo() {
   await db.supplier.deleteMany({ where: { id: { in: sIds } } }); // teklif, kampanya, katalog, bölge: cascade
   await db.member.deleteMany({ where: { id: { in: mIds } } });
   await db.product.deleteMany({ where: { chamberId: CH, slug: { startsWith: "demo-" } } });
-  await db.brand.deleteMany({ where: { name: { endsWith: "(Demo)" } } });
+  await db.brand.deleteMany({
+    where: { products: { none: {} }, OR: [{ name: { endsWith: "(Demo)" } }, { slug: { startsWith: "demo-" } }] },
+  });
   console.log("• Eski demo verisi silindi.");
 }
 
@@ -141,12 +168,12 @@ async function main() {
   const offerBySlug = new Map<string, string[]>();
   for (const p of DEMO_PRODUCTS) {
     const brand = await db.brand.upsert({ where: { name: p.brand }, update: {}, create: { name: p.brand, slug: p.slug.replace(/^demo-/, "demo-marka-") + "-" + p.brand.length } });
-    const img = await saveFile("products", await asset(`${p.slug}.png`), ["image"]);
+    const img = await saveFile("products", await productImage(p), ["image"]);
     const prod = await db.product.create({
       data: {
         chamberId: CH, name: p.name, slug: p.slug, barcode: p.barcode, brandId: brand.id, categoryId: categories.get(p.category)!,
         unitType: p.unitType, unitAmount: p.unitAmount, description: "DEMO ürün — örnek gösterim amaçlıdır.", status: "ACTIVE",
-        createdAt: new Date(now.getTime() - (DEMO_PRODUCTS.indexOf(p) % 10) * DAY),
+        createdAt: new Date(now.getTime() - (p.ageDays ?? (DEMO_PRODUCTS.indexOf(p) % 10) + 3) * DAY),
         images: { create: { path: img.key } },
       },
     });
@@ -155,7 +182,7 @@ async function main() {
       const o = await db.supplierProduct.create({
         data: {
           supplierId: supplierIds[si], productId: prod.id, sku: `D${si + 1}-${p.barcode.slice(-4)}`, packType: "KOLI", unitsPerPack: units,
-          packPrice, unitPrice: D(packPrice).div(units).toDecimalPlaces(2), vatRate: p.category.includes("Temizlik") || p.category.includes("Bakım") ? 20 : 10,
+          packPrice, unitPrice: D(packPrice).div(units).toDecimalPlaces(2), vatRate: p.vatRate ?? (p.category.includes("Temizlik") || p.category.includes("Bakım") ? 20 : 10),
           minOrderQty: 1, orderStep: 1,
           stock: { create: { quantity: stock } },
           prices: { create: [{ type: "LIST", packPrice: packPrice * 0.95, validFrom: new Date(now.getTime() - 40 * DAY), validTo: new Date(now.getTime() - 10 * DAY) }, { type: "LIST", packPrice, validFrom: new Date(now.getTime() - 10 * DAY) }] },
@@ -219,13 +246,13 @@ async function main() {
   const slots = new Map((await ensureSlots(CH)).map((s) => [s.code, s.id]));
   await db.advertisement.create({
     data: {
-      slotId: slots.get("home-top")!, supplierId: supplierIds[1], title: "DEMO Yaz serinliği bannerı", imagePath: (await saveFile("ads", await asset("banner-home.png"), ["image"])).key,
+      slotId: slots.get("home-top")!, supplierId: supplierIds[1], title: "DEMO Yaz serinliği bannerı", imagePath: (await saveFile("ads", await bannerImage("banner-home.png", "Yaz serinligi", "#0284c7", 1200, 300), ["image"])).key,
       targetUrl: "/magaza/tedarikciler/demo-icecek-dagitim", startsAt: started, endsAt: new Date(now.getTime() + 24 * DAY), status: "APPROVED", fee: 1500, impressions: 214, clicks: 19,
     },
   });
   await db.advertisement.create({
     data: {
-      slotId: slots.get("products-top")!, supplierId: supplierIds[2], title: "DEMO Temizlik kampanyası bannerı", imagePath: (await saveFile("ads", await asset("banner-products.png"), ["image"])).key,
+      slotId: slots.get("products-top")!, supplierId: supplierIds[2], title: "DEMO Temizlik kampanyası bannerı", imagePath: (await saveFile("ads", await bannerImage("banner-products.png", "Temizlik kampanyasi", "#16a34a", 1200, 200), ["image"])).key,
       targetUrl: "/magaza/tedarikciler/demo-temizlik-toptan", startsAt: started, endsAt: new Date(now.getTime() + 24 * DAY), status: "APPROVED", fee: 1000, impressions: 132, clicks: 7,
     },
   });
@@ -240,8 +267,8 @@ async function main() {
   await db.catalog.create({
     data: {
       supplierId: supplierIds[0], title: "Aylık Fırsat Kataloğu", categoryId: categories.get("Kahvaltılık Ürünler"), status: "APPROVED",
-      coverPath: (await saveFile("catalogs", await asset("catalog-cover.png"), ["image"])).key,
-      filePath: (await saveFile("catalogs", await asset("catalog.pdf"), ["document"])).key,
+      coverPath: (await saveFile("catalogs", await bannerImage("catalog-cover.png", "Demo katalog", "#145064", 800, 1000), ["image"])).key,
+      filePath: (await saveFile("catalogs", await catalogPdf(), ["document"])).key,
       startsAt: new Date(now.getTime() - 3 * DAY), endsAt: new Date(now.getTime() + 27 * DAY),
       items: { create: ["demo-beyaz-peynir", "demo-findik-ezmesi", "demo-recel-cilek", "demo-siyah-cay-1kg", "demo-kirmizi-mercimek", "demo-patates-cipsi"].map((s, i) => ({ supplierProductId: offer(s), sortOrder: i })) },
     },

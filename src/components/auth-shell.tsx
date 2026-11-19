@@ -1,3 +1,4 @@
+import { DeliveryScene } from "./delivery-scene";
 import { Logo } from "./brand";
 
 /** Giriş ve şifre sayfaları için ortak çerçeve */
@@ -34,6 +35,10 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
 
         <div className="relative z-10 animate-rise">
           <Logo size="lg" inverted />
+        </div>
+
+        <div className="relative z-10 flex flex-1 items-center justify-center py-4">
+          <DeliveryScene className="h-auto max-h-[250px] w-full max-w-[640px] drop-shadow-[0_18px_30px_rgba(0,0,0,0.18)]" />
         </div>
 
         <div className="relative z-10 max-w-lg animate-rise-delay">

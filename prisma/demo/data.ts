@@ -31,6 +31,10 @@ export interface DemoProduct {
   unitAmount?: number;
   barcode: string;
   color: string;
+  /** KDV oranı. Boşsa kategoriye göre 10 veya 20 uygulanır. */
+  vatRate?: number;
+  /** Kaç gün önce eklenmiş sayılsın. Boşsa eski demo ürün sırası kullanılır. */
+  ageDays?: number;
   /** [tedarikçi sırası (0..2), koli fiyatı, koli içi adet, stok] */
   offers: [number, number, number, number][];
 }
@@ -72,4 +76,35 @@ export const DEMO_PRODUCTS: DemoProduct[] = [
   { slug: "demo-camasir-suyu", name: "Çamaşır Suyu 2 L", category: "Temizlik Ürünleri", brand: "Parlak Ev (Demo)", unitType: "LITRE", unitAmount: 2, barcode: "8690000000226", color: "#93c5fd", offers: [[2, 380, 8, 60]] },
   { slug: "demo-tuvalet-kagidi", name: "Tuvalet Kağıdı 32'li", category: "Temizlik Ürünleri", brand: "Yumuşak Rulo (Demo)", unitType: "PAKET", barcode: "8690000000233", color: "#e0e7ff", offers: [[2, 1120, 4, 25]] },
   { slug: "demo-sivi-sabun", name: "Sıvı Sabun 1,5 L", category: "Kişisel Bakım", brand: "Parlak Ev (Demo)", unitType: "LITRE", unitAmount: 1.5, barcode: "8690000000240", color: "#f9a8d4", offers: [[2, 600, 6, 30]] },
+
+  { slug: "demo-ulker-gofret", name: "Ülker Çikolatalı Gofret 36 g", category: "Bisküvi ve Gofret", brand: "Ülker", unitType: "ADET", barcode: "8690000000257", color: "#e11d48", ageDays: 0, offers: [[0, 540, 24, 80]] },
+  { slug: "demo-ulker-cikolata", name: "Ülker Sütlü Çikolata 60 g", category: "Çikolata ve Şekerleme", brand: "Ülker", unitType: "ADET", barcode: "8690000000264", color: "#9f1239", ageDays: 0, offers: [[0, 720, 24, 60]] },
+  { slug: "demo-ulker-biskuvi", name: "Ülker Kakaolu Bisküvi 100 g", category: "Bisküvi ve Gofret", brand: "Ülker", unitType: "ADET", barcode: "8690000000271", color: "#be123c", ageDays: 0, offers: [[0, 480, 24, 70]] },
+  { slug: "demo-ulker-halley", name: "Ülker Halley 30 g", category: "Bisküvi ve Gofret", brand: "Ülker", unitType: "ADET", barcode: "8690000000288", color: "#f43f5e", ageDays: 0, offers: [[0, 396, 24, 90]] },
+  { slug: "demo-ulker-metro", name: "Ülker Metro 36 g", category: "Çikolata ve Şekerleme", brand: "Ülker", unitType: "ADET", barcode: "8690000000493", color: "#881337", ageDays: 0, offers: [[0, 510, 24, 65]] },
+
+  { slug: "demo-icim-sut", name: "İçim Tam Yağlı Süt 1 L", category: "Süt ve Süt Ürünleri", brand: "İçim", unitType: "LITRE", unitAmount: 1, barcode: "8690000000295", color: "#0284c7", ageDays: 0, offers: [[1, 420, 12, 100]] },
+  { slug: "demo-icim-ayran", name: "İçim Ayran 200 ml", category: "Süt ve Süt Ürünleri", brand: "İçim", unitType: "LITRE", unitAmount: 0.2, barcode: "8690000000301", color: "#38bdf8", ageDays: 0, offers: [[1, 240, 20, 80]] },
+  { slug: "demo-icim-yogurt", name: "İçim Yoğurt 1 kg", category: "Süt ve Süt Ürünleri", brand: "İçim", unitType: "KG", unitAmount: 1, barcode: "8690000000318", color: "#0ea5e9", ageDays: 0, offers: [[1, 560, 6, 40]] },
+  { slug: "demo-icim-peynir", name: "İçim Beyaz Peynir 500 g", category: "Kahvaltılık Ürünler", brand: "İçim", unitType: "KG", unitAmount: 0.5, barcode: "8690000000325", color: "#0369a1", ageDays: 0, offers: [[1, 980, 8, 25]] },
+
+  { slug: "demo-coca-cola-1l", name: "Coca-Cola 1 L", category: "Gazlı İçecekler", brand: "Coca-Cola", unitType: "LITRE", unitAmount: 1, barcode: "8690000000332", color: "#dc2626", ageDays: 0, offers: [[1, 360, 12, 120], [0, 372, 12, 40]] },
+  { slug: "demo-coca-cola-330", name: "Coca-Cola 330 ml", category: "Gazlı İçecekler", brand: "Coca-Cola", unitType: "LITRE", unitAmount: 0.33, barcode: "8690000000349", color: "#b91c1c", ageDays: 0, offers: [[1, 432, 24, 150]] },
+  { slug: "demo-coca-cola-zero", name: "Coca-Cola Zero 1 L", category: "Gazlı İçecekler", brand: "Coca-Cola", unitType: "LITRE", unitAmount: 1, barcode: "8690000000356", color: "#111827", ageDays: 0, offers: [[1, 360, 12, 70]] },
+  { slug: "demo-fanta-1l", name: "Fanta Portakal 1 L", category: "Gazlı İçecekler", brand: "Coca-Cola", unitType: "LITRE", unitAmount: 1, barcode: "8690000000363", color: "#f97316", ageDays: 0, offers: [[1, 348, 12, 60]] },
+  { slug: "demo-sprite-1l", name: "Sprite 1 L", category: "Gazlı İçecekler", brand: "Coca-Cola", unitType: "LITRE", unitAmount: 1, barcode: "8690000000370", color: "#16a34a", ageDays: 0, offers: [[1, 348, 12, 55]] },
+
+  { slug: "demo-eti-cin", name: "Eti Cin 25 g", category: "Bisküvi ve Gofret", brand: "Eti", unitType: "ADET", barcode: "8690000000387", color: "#ca8a04", ageDays: 0, offers: [[0, 360, 24, 100]] },
+  { slug: "demo-eti-burcak", name: "Eti Burçak 131 g", category: "Bisküvi ve Gofret", brand: "Eti", unitType: "ADET", barcode: "8690000000394", color: "#a16207", ageDays: 0, offers: [[0, 520, 18, 45]] },
+  { slug: "demo-eti-tutku", name: "Eti Tutku 100 g", category: "Bisküvi ve Gofret", brand: "Eti", unitType: "ADET", barcode: "8690000000400", color: "#854d0e", ageDays: 0, offers: [[0, 480, 24, 50]] },
+  { slug: "demo-eti-wanted", name: "Eti Wanted 35 g", category: "Çikolata ve Şekerleme", brand: "Eti", unitType: "ADET", barcode: "8690000000417", color: "#713f12", ageDays: 0, offers: [[0, 640, 24, 40]] },
+
+  { slug: "demo-marlboro-red", name: "Marlboro Red", category: "Diğer Toptan Ürünler", brand: "Marlboro", unitType: "PAKET", barcode: "8690000000424", color: "#b91c1c", vatRate: 20, ageDays: 0, offers: [[0, 2100, 10, 40]] },
+  { slug: "demo-marlboro-gold", name: "Marlboro Gold", category: "Diğer Toptan Ürünler", brand: "Marlboro", unitType: "PAKET", barcode: "8690000000431", color: "#d4a017", vatRate: 20, ageDays: 0, offers: [[0, 2100, 10, 35]] },
+  { slug: "demo-marlboro-touch", name: "Marlboro Touch", category: "Diğer Toptan Ürünler", brand: "Marlboro", unitType: "PAKET", barcode: "8690000000448", color: "#1f2937", vatRate: 20, ageDays: 0, offers: [[0, 1980, 10, 20]] },
+
+  { slug: "demo-sutas-sut", name: "Sütaş Tam Yağlı Süt 1 L", category: "Süt ve Süt Ürünleri", brand: "Sütaş", unitType: "LITRE", unitAmount: 1, barcode: "8690000000455", color: "#2563eb", ageDays: 0, offers: [[1, 410, 12, 70]] },
+  { slug: "demo-erikli-su", name: "Erikli Doğal Kaynak Suyu 0,5 L", category: "Su ve Maden Suyu", brand: "Erikli", unitType: "LITRE", unitAmount: 0.5, barcode: "8690000000462", color: "#0891b2", ageDays: 0, offers: [[1, 90, 24, 200]] },
+  { slug: "demo-nescafe-classic", name: "Nescafe Classic 100 g", category: "İçecekler", brand: "Nescafé", unitType: "ADET", barcode: "8690000000479", color: "#7c2d12", ageDays: 0, offers: [[0, 1450, 12, 30]] },
+  { slug: "demo-lays-klasik", name: "Lay's Klasik 107 g", category: "Atıştırmalıklar", brand: "Lay's", unitType: "ADET", barcode: "8690000000486", color: "#eab308", ageDays: 0, offers: [[0, 620, 18, 55]] },
 ];

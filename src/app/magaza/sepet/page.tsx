@@ -10,7 +10,8 @@ import {
 } from "@/actions/member";
 import { Alert } from "@/components/brand";
 import { ActionForm, SelectField, SubmitButton, TextareaField } from "@/components/form";
-import { Badge, EmptyState, PageHeader, Section, Table, Td } from "@/components/panel/ui";
+import { EmptyState, PageHeader } from "@/components/panel/ui";
+import { ProductImage } from "@/components/shop/product-card";
 import { requireMemberPage } from "@/lib/auth/member-page";
 import { db } from "@/lib/db";
 import { fmtMoney, fmtNumber, PACK_TYPE } from "@/lib/format";
@@ -32,51 +33,70 @@ function packLabel(packType: string, unitsPerPack: number) {
   return `${PACK_TYPE[packType] ?? packType}${unitsPerPack > 1 ? ` × ${unitsPerPack}` : ""}`;
 }
 
-function TotalsList({ totals, className = "" }: { totals: TotalsView; className?: string }) {
+function SummaryRows({ totals }: { totals: TotalsView }) {
   const discount = Number(totals.discountTotal.toString());
   return (
-    <dl className={`space-y-1.5 text-sm ${className}`}>
-      <div className="flex justify-between gap-4">
-        <dt className="text-slate-600">Ara toplam (KDV hariç)</dt>
-        <dd className="tabular-nums">{fmtMoney(totals.subtotal)}</dd>
+    <dl className="space-y-2 text-sm">
+      <div className="flex justify-between gap-4 text-slate-600">
+        <dt>Ara toplam</dt>
+        <dd className="tabular-nums text-slate-900">{fmtMoney(totals.subtotal)}</dd>
       </div>
-      <div className="flex justify-between gap-4">
-        <dt className="text-slate-600">İndirim</dt>
-        <dd className="tabular-nums text-emerald-700">{discount > 0 ? `−${fmtMoney(totals.discountTotal)}` : fmtMoney(0)}</dd>
-      </div>
-      <div className="flex justify-between gap-4">
-        <dt className="text-slate-600">KDV</dt>
-        <dd className="tabular-nums">{fmtMoney(totals.vatTotal)}</dd>
-      </div>
-      <div className="flex justify-between gap-4 border-t border-slate-200 pt-2 text-base font-bold">
-        <dt>Genel toplam (KDV dahil)</dt>
-        <dd className="tabular-nums">{fmtMoney(totals.grandTotal)}</dd>
+      {discount > 0 && (
+        <div className="flex justify-between gap-4 text-emerald-700">
+          <dt>İndirim</dt>
+          <dd className="tabular-nums">−{fmtMoney(totals.discountTotal)}</dd>
+        </div>
+      )}
+      <div className="flex justify-between gap-4 text-slate-600">
+        <dt>KDV</dt>
+        <dd className="tabular-nums text-slate-900">{fmtMoney(totals.vatTotal)}</dd>
       </div>
     </dl>
   );
 }
 
-function LineRow({ line }: { line: CartLine }) {
+function CartLineCard({ line }: { line: CartLine }) {
   const { offer, price } = line;
+  const image = offer.product.images[0]?.path ?? null;
   const discounted = !price.finalPackPrice.eq(price.listPackPrice);
   const rules: string[] = [];
   if (!offer.minOrderQty.eq(1)) rules.push(`en az ${fmtNumber(offer.minOrderQty)}`);
-  if (!offer.orderStep.eq(1)) rules.push(`artış: ${fmtNumber(offer.orderStep)}`);
+  if (!offer.orderStep.eq(1)) rules.push(`${fmtNumber(offer.orderStep)} adet artış`);
   const issues = [!line.available ? "Bölgenizde artık satışta değil." : null, line.quantityError, line.stockError].filter(
     (x): x is string => Boolean(x),
   );
 
   return (
-    <tr className={line.blocking ? "bg-red-50/50" : undefined}>
-      <Td>
-        <Link href={`/magaza/urun/${offer.productId}`} className="font-medium text-brand-700 hover:underline">
-          {offer.product.name}
-        </Link>
-        <div className="text-xs text-slate-500">{offer.product.brand.name}</div>
-        {price.campaignId && (
-          <div className="mt-1">
-            <Badge tone="green">{price.campaignTitle ?? "Kampanya"}</Badge>
+    <li className={`flex gap-3 px-4 py-4 sm:gap-4 sm:px-5 ${line.blocking ? "bg-red-50/70" : ""}`}>
+      <Link href={`/magaza/urun/${offer.productId}`} aria-label={offer.product.name} className="shrink-0 overflow-hidden rounded-xl border border-slate-100">
+        <ProductImage path={image} alt="" className="h-20 w-20 sm:h-24 sm:w-24" />
+      </Link>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <Link href={`/magaza/urun/${offer.productId}`} className="line-clamp-2 text-sm font-semibold text-brand-950 hover:text-brand-700">
+              {offer.product.name}
+            </Link>
+            <p className="mt-0.5 text-xs text-slate-500">
+              {offer.product.brand.name} · {packLabel(offer.packType, offer.unitsPerPack)}
+            </p>
           </div>
+          <div className="shrink-0 text-right">
+            <div className="text-sm font-semibold tabular-nums text-brand-950">{fmtMoney(price.lineTotal)}</div>
+            <div className="text-[11px] text-slate-500">KDV dahil</div>
+          </div>
+        </div>
+
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-slate-500">
+          <span className="font-medium tabular-nums text-slate-700">{fmtMoney(price.finalPackPrice)} / koli</span>
+          {discounted && <span className="tabular-nums line-through">{fmtMoney(price.listPackPrice)}</span>}
+          {price.campaignTitle && <span className="font-medium text-amber-700">{price.campaignTitle}</span>}
+        </div>
+
+        {line.priceChanged && (
+          <p className="mt-1 text-xs font-medium text-amber-800">
+            Fiyat değişti: {fmtMoney(line.seenPackPrice)} → {fmtMoney(price.finalPackPrice)}
+          </p>
         )}
         {issues.length > 0 && (
           <ul className="mt-1 space-y-0.5 text-xs font-medium text-red-700" role="alert">
@@ -85,17 +105,10 @@ function LineRow({ line }: { line: CartLine }) {
             ))}
           </ul>
         )}
-        {line.priceChanged && (
-          <p className="mt-1 text-xs font-medium text-amber-800">
-            Fiyat değişti: eski {fmtMoney(line.seenPackPrice)} → yeni {fmtMoney(price.finalPackPrice)}
-          </p>
-        )}
-      </Td>
-      <Td className="whitespace-nowrap">{packLabel(offer.packType, offer.unitsPerPack)}</Td>
-      <Td>
-        <ActionForm action={setCartQuantityAction} compact className="min-w-[8rem]">
-          <input type="hidden" name="id" value={line.itemId} />
-          <div className="flex items-center gap-1.5">
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <ActionForm action={setCartQuantityAction} compact className="flex items-center gap-1.5">
+            <input type="hidden" name="id" value={line.itemId} />
             <label htmlFor={`q-${line.itemId}`} className="sr-only">
               {offer.product.name} miktarı
             </label>
@@ -104,78 +117,54 @@ function LineRow({ line }: { line: CartLine }) {
               name="quantity"
               inputMode="decimal"
               defaultValue={line.quantity.toString()}
-              className="input w-20 px-2 py-1.5 text-right tabular-nums"
+              className="input w-16 px-2 py-1.5 text-center text-sm tabular-nums"
               required
             />
             <SubmitButton variant="small">Güncelle</SubmitButton>
-          </div>
-          {rules.length > 0 && <p className="mt-1 text-xs text-slate-500">{rules.join(", ")}</p>}
-        </ActionForm>
-      </Td>
-      <Td className="whitespace-nowrap tabular-nums">
-        {discounted ? <span className="text-slate-400 line-through">{fmtMoney(price.listPackPrice)}</span> : fmtMoney(price.listPackPrice)}
-      </Td>
-      <Td className="whitespace-nowrap font-medium tabular-nums">{fmtMoney(price.finalPackPrice)}</Td>
-      <Td className="whitespace-nowrap tabular-nums">
-        <div>{fmtMoney(price.lineSubtotal.minus(price.lineDiscount))}</div>
-        <div className="text-xs text-slate-500">KDV dahil {fmtMoney(price.lineTotal)}</div>
-        <div className="text-xs text-slate-400">%{price.vatRate} KDV</div>
-      </Td>
-      <Td>
-        <ActionForm action={removeCartItemAction} compact>
-          <input type="hidden" name="id" value={line.itemId} />
-          <SubmitButton variant="small-danger">Çıkar</SubmitButton>
-        </ActionForm>
-      </Td>
-    </tr>
-  );
-}
-
-function GroupSection({ group }: { group: CartGroup }) {
-  const days = deliveryDaysText(group.deliveryDays);
-  const missing = group.minAmount.minus(group.netAmount);
-  return (
-    <section className="space-y-3" aria-labelledby={`g-${group.supplier.id}`}>
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h2 id={`g-${group.supplier.id}`} className="text-lg font-semibold text-slate-900">
-            <Link href={`/magaza/tedarikciler/${group.supplier.slug}`} className="hover:underline">
-              {group.supplier.tradeName}
-            </Link>
-          </h2>
-          <p className="text-sm text-slate-600">
-            Teslimat günleri: {days ?? "belirtilmemiş"}
-            {group.minAmount.gt(0) && <> · Asgari sipariş {fmtMoney(group.minAmount)} (KDV hariç)</>}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {group.orderable ? <Badge tone="green">Sipariş verilebilir</Badge> : <Badge tone="amber">Sipariş verilemez</Badge>}
-          <ActionForm action={clearCartAction} compact confirm={`${group.supplier.tradeName} ürünlerinin tümü sepetten çıkarılsın mı?`}>
-            <input type="hidden" name="supplierId" value={group.supplier.id} />
-            <SubmitButton variant="small-danger">Bu tedarikçiyi boşalt</SubmitButton>
+          </ActionForm>
+          {rules.length > 0 && <span className="text-xs text-slate-500">{rules.join(" · ")}</span>}
+          <ActionForm action={removeCartItemAction} compact className="ml-auto">
+            <input type="hidden" name="id" value={line.itemId} />
+            <SubmitButton variant="small">Kaldır</SubmitButton>
           </ActionForm>
         </div>
       </div>
+    </li>
+  );
+}
 
-      {!group.meetsMin && (
-        <Alert tone="warning">
-          Asgari sipariş tutarı {fmtMoney(group.minAmount)} (KDV hariç); {fmtMoney(missing)} daha ekleyin. Bu tedarikçinin ürünleri sepette kalır, diğerleri
-          sipariş edilir.
-        </Alert>
-      )}
-      {group.hasBlocking && (
-        <Alert tone="error">Bu tedarikçideki bazı ürünlerde sorun var (kırmızı ile gösterildi). Miktarı düzeltin veya ürünü çıkarın.</Alert>
-      )}
-
-      <Table head={["Ürün", "Paket", "Miktar", "Liste fiyatı", "Uygulanan fiyat", "Tutar", ""]}>
-        {group.lines.map((l) => (
-          <LineRow key={l.itemId} line={l} />
-        ))}
-      </Table>
-
-      <div className="card ml-auto max-w-sm p-4">
-        <TotalsList totals={group.totals} />
+function SupplierCard({ group }: { group: CartGroup }) {
+  const days = deliveryDaysText(group.deliveryDays);
+  const missing = group.minAmount.minus(group.netAmount);
+  return (
+    <section className="card overflow-hidden" aria-labelledby={`g-${group.supplier.id}`}>
+      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-3.5 sm:px-5">
+        <div className="min-w-0">
+          <h2 id={`g-${group.supplier.id}`} className="truncate text-base font-semibold text-brand-950">
+            <Link href={`/magaza/tedarikciler/${group.supplier.slug}`} className="hover:text-brand-700">
+              {group.supplier.tradeName}
+            </Link>
+          </h2>
+          <p className="mt-0.5 text-xs text-slate-500">
+            {group.lines.length} ürün
+            {days ? ` · Teslimat: ${days}` : ""}
+          </p>
+        </div>
+        <ActionForm action={clearCartAction} compact confirm={`${group.supplier.tradeName} ürünleri sepetten çıkarılsın mı?`}>
+          <input type="hidden" name="supplierId" value={group.supplier.id} />
+          <SubmitButton variant="small">Grubu sil</SubmitButton>
+        </ActionForm>
       </div>
+      {!group.meetsMin && (
+        <p className="bg-amber-50 px-4 py-2 text-xs text-amber-900 sm:px-5">
+          Bu tedarikçi için en az {fmtMoney(group.minAmount)} gerekiyor. {fmtMoney(missing)} daha ekleyin.
+        </p>
+      )}
+      <ul className="divide-y divide-slate-100">
+        {group.lines.map((line) => (
+          <CartLineCard key={line.itemId} line={line} />
+        ))}
+      </ul>
     </section>
   );
 }
@@ -190,16 +179,16 @@ export default async function CartPage() {
   const canOrder = can("memberSelf.order");
   const orderable = cart.groups.filter((g) => g.orderable);
   const idempotencyKey = randomUUID();
+  const itemCount = cart.groups.reduce((n, g) => n + g.lines.length, 0);
 
   if (cart.groups.length === 0) {
     return (
       <>
-        <PageHeader title="Sepetim" />
+        <PageHeader title="Sepet" />
         <EmptyState title="Sepetiniz boş.">
-          <Link href="/magaza/urunler" className="font-semibold text-brand-600 hover:underline">
+          <Link href="/magaza/urunler" className="font-semibold text-brand-700 hover:underline">
             Ürünlere göz atın
-          </Link>{" "}
-          ve sipariş vermek istediklerinizi sepete ekleyin.
+          </Link>
         </EmptyState>
       </>
     );
@@ -208,124 +197,113 @@ export default async function CartPage() {
   return (
     <>
       <PageHeader
-        title="Sepetim"
-        description="Ürünler tedarikçiye göre gruplanır; her tedarikçiye ayrı sipariş gider. Fiyatlar KDV hariçtir, toplamlarda KDV dahil tutar da gösterilir."
+        title="Sepet"
+        description={`${itemCount} ürün`}
         actions={
           <ActionForm action={clearCartAction} compact confirm="Sepetteki tüm ürünler çıkarılsın mı?">
-            <SubmitButton variant="small-danger">Sepeti boşalt</SubmitButton>
+            <SubmitButton variant="small">Sepeti boşalt</SubmitButton>
           </ActionForm>
         }
       />
 
-      <div className="mb-6 space-y-3">
-        {cart.hasPriceChange && (
-          <Alert tone="warning">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span>Sepetinizdeki bazı ürünlerin fiyatı, sepete eklediğinizden bu yana değişti. Sipariş vermeden önce güncel fiyatları onaylayın.</span>
-              <ActionForm action={acceptCartPricesAction} compact>
-                <SubmitButton variant="small">Güncel fiyatları onayla</SubmitButton>
+      {cart.hasPriceChange && (
+        <div className="mb-4">
+          <Alert tone="warning">Bazı fiyatlar sepete eklediğinizden beri değişti. Siparişten önce güncel fiyatı onaylayın.</Alert>
+        </div>
+      )}
+      {dues.orderingBlocked && (
+        <div className="mb-4">
+          <Alert tone="warning">Vadesi geçmiş {dues.overdueCount} aidat kaydınız olduğu için şu an sipariş veremezsiniz. Sepetiniz duruyor.</Alert>
+        </div>
+      )}
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="space-y-4">
+          {cart.groups.map((group) => (
+            <SupplierCard key={group.supplier.id} group={group} />
+          ))}
+          <Link href="/magaza/urunler" className="inline-block text-sm font-semibold text-brand-700 hover:underline">
+            Alışverişe devam et
+          </Link>
+        </div>
+
+        <aside className="card sticky top-24 p-5">
+          <h2 className="font-display text-lg font-semibold text-brand-950">Sipariş özeti</h2>
+          <div className="mt-4">
+            <SummaryRows totals={orderable.length > 0 ? cart.orderableTotals : cart.totals} />
+          </div>
+          <div className="mt-3 flex items-baseline justify-between border-t border-slate-100 pt-3">
+            <span className="text-sm font-semibold text-slate-700">Toplam</span>
+            <span className="font-display text-2xl font-semibold tabular-nums text-brand-800">
+              {fmtMoney(orderable.length > 0 ? cart.orderableTotals.grandTotal : cart.totals.grandTotal)}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-slate-500">KDV dahil. Ödeme tedarikçiyle aranızda yapılır.</p>
+
+          <div className="mt-5">
+            {!canOrder ? (
+              <p className="text-sm text-slate-600">Sipariş verme yetkiniz yok.</p>
+            ) : dues.orderingBlocked ? (
+              <p className="text-sm text-slate-600">Aidat borcu nedeniyle sipariş kapalı.</p>
+            ) : addresses.length === 0 ? (
+              <Alert tone="warning">
+                Teslimat adresi yok.{" "}
+                <Link href="/magaza/hesabim" className="font-semibold underline">
+                  Hesabımdan ekleyin
+                </Link>
+                .
+              </Alert>
+            ) : cart.hasPriceChange ? (
+              <ActionForm action={acceptCartPricesAction}>
+                <SubmitButton className="w-full">Güncel fiyatları onayla</SubmitButton>
               </ActionForm>
-            </div>
-          </Alert>
-        )}
-        {dues.orderingBlocked && (
-          <Alert tone="warning">
-            Vadesi geçmiş {dues.overdueCount} aidat kaydınız bulunduğu için şu an sipariş veremezsiniz. Sepetiniz korunur; aidat durumunuz için Oda ile
-            iletişime geçin.
-          </Alert>
-        )}
-      </div>
-
-      <div className="space-y-10">
-        {cart.groups.map((g) => (
-          <GroupSection key={g.supplier.id} group={g} />
-        ))}
-      </div>
-
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">
-        <Section title="Sepet toplamı" className="lg:order-2">
-          <TotalsList totals={cart.totals} />
-          <p className="mt-3 text-xs text-slate-500">Tüm tedarikçiler dahil. Ödeme platform dışında, tedarikçiyle aranızda yapılır.</p>
-        </Section>
-
-        <Section title="Siparişi tamamla" className="lg:order-1 lg:col-span-2">
-          {!canOrder ? (
-            <p className="text-sm text-slate-600">Sipariş verme yetkiniz yok. İşletme yetkilinizle görüşün.</p>
-          ) : dues.orderingBlocked ? (
-            <p className="text-sm text-slate-600">Aidat borcu nedeniyle sipariş verme kapalı.</p>
-          ) : addresses.length === 0 ? (
-            <Alert tone="warning">
-              Kayıtlı teslimat adresiniz yok.{" "}
-              <Link href="/magaza/hesabim" className="font-semibold underline">
-                Hesabım
-              </Link>{" "}
-              sayfasından adres ekleyin.
-            </Alert>
-          ) : cart.hasPriceChange ? (
-            <div className="space-y-3">
-              <p className="text-sm text-slate-700">Sipariş vermeden önce değişen fiyatları onaylamanız gerekiyor.</p>
-              <ActionForm action={acceptCartPricesAction} compact>
-                <SubmitButton variant="secondary">Güncel fiyatları onayla</SubmitButton>
-              </ActionForm>
-            </div>
-          ) : orderable.length === 0 ? (
-            <p className="text-sm text-slate-700">
-              Şu an sipariş verilebilecek tedarikçi grubu yok. Asgari tutarı tamamlayın veya kırmızı ile işaretli sorunları giderin.
-            </p>
-          ) : (
-            <ActionForm
-              action={placeOrderAction}
-              confirm={`Seçili tedarikçilere sipariş verilsin mi? Toplam (KDV dahil): ${fmtMoney(cart.orderableTotals.grandTotal)}`}
-              className="space-y-5"
-            >
-              <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
-              <input type="hidden" name="supplierSelection" value="1" />
-
-              <fieldset>
-                <legend className="label">Sipariş verilecek tedarikçiler</legend>
-                <div className="mt-1 space-y-2">
-                  {orderable.map((g) => (
-                    <label key={g.supplier.id} className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-slate-200 p-3 text-sm text-slate-800">
-                      <input type="checkbox" name="supplierIds" value={g.supplier.id} defaultChecked className="mt-0.5 h-5 w-5 rounded border-slate-300 accent-brand-600" />
-                      <span className="flex-1">
-                        <span className="font-medium">{g.supplier.tradeName}</span>
-                        <span className="block text-xs text-slate-500">
-                          {g.lines.length} ürün · {fmtMoney(g.netAmount)} KDV hariç · {fmtMoney(g.totals.grandTotal)} KDV dahil
-                        </span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-                {cart.groups.length > orderable.length && (
-                  <p className="mt-2 text-xs text-slate-500">
-                    Asgari tutarı karşılanmayan veya sorunlu ürünü olan {cart.groups.length - orderable.length} tedarikçinin ürünleri sepette kalır.
-                  </p>
+            ) : orderable.length === 0 ? (
+              <p className="text-sm text-slate-600">Asgari tutarı tamamlayın veya işaretli ürün sorunlarını giderin.</p>
+            ) : (
+              <ActionForm
+                action={placeOrderAction}
+                confirm={`Sipariş verilsin mi? Toplam: ${fmtMoney(cart.orderableTotals.grandTotal)}`}
+                className="space-y-4"
+              >
+                <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
+                <input type="hidden" name="supplierSelection" value="1" />
+                {orderable.length === 1 ? (
+                  <input type="hidden" name="supplierIds" value={orderable[0].supplier.id} />
+                ) : (
+                  <fieldset>
+                    <legend className="label">Tedarikçiler</legend>
+                    <div className="mt-1 space-y-2">
+                      {orderable.map((g) => (
+                        <label key={g.supplier.id} className="flex cursor-pointer items-start gap-2 text-sm">
+                          <input type="checkbox" name="supplierIds" value={g.supplier.id} defaultChecked className="mt-0.5 h-4 w-4 rounded accent-brand-700" />
+                          <span>
+                            <span className="font-medium text-slate-900">{g.supplier.tradeName}</span>
+                            <span className="block text-xs text-slate-500">{fmtMoney(g.totals.grandTotal)}</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
                 )}
-              </fieldset>
-
-              <SelectField
-                name="addressId"
-                label="Teslimat adresi"
-                required
-                defaultValue={cart.ctx.address?.id ?? addresses[0].id}
-                options={addresses.map((a) => ({
-                  value: a.id,
-                  label: `${a.title} — ${[a.neighborhood, a.line].filter(Boolean).join(", ")}, ${a.district.name}/${a.district.city}${a.isDefault ? " (varsayılan)" : ""}`,
-                }))}
-                hint="Ürünlerin satış durumu teslimat adresinin ilçesine göre kontrol edilir."
-              />
-
-              <TextareaField name="note" label="Sipariş notu" maxLength={500} rows={3} placeholder="Örn. sabah 10'dan önce teslim edilsin" hint="İsteğe bağlı; tedarikçilere iletilir." />
-
-              <div className="rounded-lg bg-slate-50 p-4">
-                <div className="mb-2 text-sm font-semibold text-slate-900">Sipariş edilecek tutar (seçili tüm tedarikçiler)</div>
-                <TotalsList totals={cart.orderableTotals} />
-              </div>
-
-              <SubmitButton className="w-full sm:w-auto">Siparişi ver</SubmitButton>
-            </ActionForm>
-          )}
-        </Section>
+                <SelectField
+                  name="addressId"
+                  label="Teslimat adresi"
+                  required
+                  defaultValue={cart.ctx.address?.id ?? addresses[0].id}
+                  options={addresses.map((a) => ({
+                    value: a.id,
+                    label: `${a.title} — ${a.district.name}${a.isDefault ? " (varsayılan)" : ""}`,
+                  }))}
+                />
+                <TextareaField name="note" label="Not" maxLength={500} rows={2} placeholder="İsteğe bağlı" />
+                {cart.groups.length > orderable.length && (
+                  <p className="text-xs text-slate-500">Tutarı yetmeyen tedarikçilerin ürünleri sepette kalır.</p>
+                )}
+                <SubmitButton className="w-full">Siparişi ver</SubmitButton>
+              </ActionForm>
+            )}
+          </div>
+        </aside>
       </div>
     </>
   );

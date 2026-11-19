@@ -2,7 +2,7 @@ import { withBase } from "@/lib/base-path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Alert } from "@/components/brand";
-import { Badge, EmptyState, PageHeader, StatCard } from "@/components/panel/ui";
+import { EmptyState, PageHeader, StatCard } from "@/components/panel/ui";
 import { AdBanner } from "@/components/shop/ad-banner";
 import { DeliveryNotice, ProductGrid } from "@/components/shop/product-card";
 import { SponsoredStrip } from "@/components/shop/sponsored-strip";
@@ -13,6 +13,89 @@ import { fmtDate } from "@/lib/format";
 import { listShopCatalogs } from "@/modules/revenue/catalogs";
 import { shopHome } from "@/modules/shop/catalog";
 import type { ProductSummary } from "@/modules/shop/catalog";
+
+type HomeCampaign = NonNullable<Awaited<ReturnType<typeof shopHome>>>["campaigns"][number];
+
+function daysLeft(endsAt: Date) {
+  return Math.max(0, Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000));
+}
+
+function CampaignCard({ campaign: c, hero = false, span = false }: { campaign: HomeCampaign; hero?: boolean; span?: boolean }) {
+  const wide = hero;
+  const left = daysLeft(c.endsAt);
+  const href = `/magaza/urunler?kampanya=1&tedarikci=${encodeURIComponent(c.supplierId)}`;
+  return (
+    <li className={span ? "lg:col-span-2" : "flex"}>
+      <Link
+        href={href}
+        className={`group relative isolate flex w-full flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-0.5 ${
+          wide ? "min-h-[250px] justify-between p-6 text-white sm:p-8" : "border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-brand-50 p-5 shadow-[0_16px_40px_-28px_rgba(184,117,20,0.9)] hover:shadow-[0_22px_44px_-24px_rgba(184,117,20,0.85)]"
+        }`}
+        style={
+          wide
+            ? { background: "linear-gradient(128deg, #0a1f29 0%, #145064 52%, #1c6d84 100%)" }
+            : undefined
+        }
+      >
+        {wide && (
+          <>
+            <div className="pointer-events-none absolute -top-16 -right-10 h-56 w-56 rounded-full bg-accent-400/25 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 left-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.14]"
+              style={{
+                backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+                backgroundSize: "42px 42px",
+                maskImage: "radial-gradient(ellipse at 70% 40%, black 10%, transparent 70%)",
+              }}
+            />
+            <span aria-hidden className="pointer-events-none absolute right-6 bottom-2 font-display text-7xl font-semibold tracking-tight text-white/10 sm:text-8xl">
+              ÖZEL
+            </span>
+          </>
+        )}
+        {!wide && <span className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-accent-400 to-accent-600" aria-hidden />}
+        {c.imagePath && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={withBase(`/api/files/${c.imagePath}`)}
+            alt=""
+            className={`pointer-events-none absolute inset-y-0 right-0 hidden object-cover sm:block ${wide ? "w-2/5 opacity-80" : "w-1/3 opacity-70"}`}
+          />
+        )}
+        <div className={`relative ${wide ? "" : "pl-2"}`}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.14em] uppercase ${wide ? "bg-accent-400 text-brand-950" : "bg-accent-400/20 text-accent-600"}`}>
+              {c.featured ? "Öne çıkan" : "Kampanya"}
+            </span>
+            <span className={`text-xs font-semibold ${wide ? "text-brand-100" : "text-slate-500"}`}>{c.supplier.tradeName}</span>
+          </div>
+          <h3 className={`mt-3 font-display font-semibold tracking-tight ${wide ? "max-w-xl text-3xl leading-tight sm:text-4xl" : "text-xl text-brand-950"}`}>
+            {c.title}
+          </h3>
+          {c.description && (
+            <p className={`mt-2 max-w-xl text-sm leading-relaxed ${wide ? "line-clamp-2 text-brand-100/90" : "line-clamp-2 text-slate-600"}`}>{c.description}</p>
+          )}
+        </div>
+        <div className={`relative mt-6 flex flex-wrap items-end justify-between gap-3 ${wide ? "" : "pl-2"}`}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`rounded-2xl px-3 py-2 ${wide ? "bg-white/10" : "bg-white/80"}`}>
+              <span className={`block font-display text-2xl font-semibold leading-none tabular-nums ${wide ? "text-accent-300" : "text-brand-800"}`}>{left}</span>
+              <span className={`text-[11px] font-medium ${wide ? "text-brand-100" : "text-slate-500"}`}>gün kaldı</span>
+            </span>
+            <span className={`text-sm ${wide ? "text-brand-100" : "text-slate-600"}`}>
+              {c._count.discounts} ürün
+              <span className={`block text-xs ${wide ? "text-white/70" : "text-slate-500"}`}>Son gün {fmtDate(c.endsAt)}</span>
+            </span>
+          </div>
+          <span className={`text-sm font-semibold ${wide ? "text-accent-300" : "text-brand-800"}`}>
+            Kampanyayı gör <span className="inline-block transition group-hover:translate-x-0.5">→</span>
+          </span>
+        </div>
+      </Link>
+    </li>
+  );
+}
 
 export const metadata: Metadata = { title: "Mağaza" };
 
@@ -100,29 +183,24 @@ export default async function MemberHome({ searchParams }: { searchParams: Promi
       {home && home.ctx.address && (
         <>
           {home.campaigns.length > 0 && (
-            <section className="mt-8" aria-label="Odaya özel kampanyalar">
-              <h2 className="mb-3 text-lg font-semibold text-slate-900">Odaya özel kampanyalar</h2>
-              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {home.campaigns.map((c) => (
-                  <li key={c.id} className="flex">
-                    <Link
-                      href={`/magaza/urunler?kampanya=1&tedarikci=${encodeURIComponent(c.supplierId)}`}
-                      className="card flex w-full flex-col border-amber-200 bg-amber-50/40 p-4 transition hover:border-amber-300 hover:shadow"
-                    >
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge tone="amber">Kampanya</Badge>
-                        {c.featured && <Badge tone="blue">Öne çıkan</Badge>}
-                      </div>
-                      <h3 className="mt-2 font-semibold text-slate-900">{c.title}</h3>
-                      {c.description && <p className="mt-1 line-clamp-2 text-sm text-slate-600">{c.description}</p>}
-                      <div className="mt-auto pt-3 text-sm text-slate-600">
-                        <div>{c.supplier.tradeName}</div>
-                        <div className="text-xs text-slate-500">
-                          {c._count.discounts} ürün · Son gün: {fmtDate(c.endsAt)}
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
+            <section className="mt-10" aria-label="Odaya özel kampanyalar">
+              <div className="mb-4 flex items-end justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold tracking-[0.18em] text-accent-600 uppercase">Üyelere özel</p>
+                  <h2 className="font-display text-2xl font-semibold tracking-tight text-brand-950">Odaya özel kampanyalar</h2>
+                </div>
+                <Link href="/magaza/urunler?kampanya=1" className="shrink-0 text-sm font-semibold text-brand-700 hover:underline">
+                  Tümünü gör →
+                </Link>
+              </div>
+              <ul className="grid gap-4 lg:grid-cols-2">
+                {home.campaigns.map((c, i) => (
+                  <CampaignCard
+                    key={c.id}
+                    campaign={c}
+                    hero={i === 0}
+                    span={i === 0 || (home.campaigns.length % 2 === 0 && i === home.campaigns.length - 1)}
+                  />
                 ))}
               </ul>
             </section>
